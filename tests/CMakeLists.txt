@@ -140,6 +140,27 @@ target_compile_definitions(${LANG_DETECT_ABORT_TEST} PRIVATE
 add_test(NAME ${LANG_DETECT_ABORT_TEST} COMMAND ${LANG_DETECT_ABORT_TEST})
 set_tests_properties(${LANG_DETECT_ABORT_TEST} PROPERTIES LABELS "tiny;gh")
 
+# Stream session unit tests; no model file required, scripted transcriber.
+set(STREAM_SESSION_TEST test-stream-session)
+add_executable(${STREAM_SESSION_TEST} ${STREAM_SESSION_TEST}.cpp)
+target_include_directories(${STREAM_SESSION_TEST} PRIVATE
+    ../include ../ggml/include ../examples ../examples/stream)
+target_link_libraries(${STREAM_SESSION_TEST} PRIVATE stream-session whisper ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME ${STREAM_SESSION_TEST} COMMAND ${STREAM_SESSION_TEST})
+set_tests_properties(${STREAM_SESSION_TEST} PROPERTIES LABELS "unit")
+
+# Stream session integration test against the real tiny.en model.
+set(STREAM_SESSION_WHISPER_TEST test-stream-session-whisper)
+add_executable(${STREAM_SESSION_WHISPER_TEST} ${STREAM_SESSION_WHISPER_TEST}.cpp)
+target_include_directories(${STREAM_SESSION_WHISPER_TEST} PRIVATE
+    ../include ../ggml/include ../examples ../examples/stream)
+target_link_libraries(${STREAM_SESSION_WHISPER_TEST} PRIVATE common stream-session whisper)
+target_compile_definitions(${STREAM_SESSION_WHISPER_TEST} PRIVATE
+    WHISPER_MODEL_PATH="${PROJECT_SOURCE_DIR}/models/for-tests-ggml-tiny.en.bin"
+    SAMPLE_PATH="${PROJECT_SOURCE_DIR}/samples/jfk.wav")
+add_test(NAME ${STREAM_SESSION_WHISPER_TEST} COMMAND ${STREAM_SESSION_WHISPER_TEST})
+set_tests_properties(${STREAM_SESSION_WHISPER_TEST} PROPERTIES LABELS "tiny")
+
 # VAD test tests VAD in isolation
 set(VAD_TEST test-vad)
 add_executable(${VAD_TEST} ${VAD_TEST}.cpp)

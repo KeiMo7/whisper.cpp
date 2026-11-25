@@ -45,6 +45,35 @@ VAD mode (--step 0): timestamped blocks meant for parsing.
 - -tdrz appends [SPEAKER_TURN] on a speaker change
 - the ### markers and [Start speaking] are on stdout
 
+## Timestamped alignment (--align and whisper-align)
+
+For machine-readable output without ANSI escapes, two options build on the
+SDL-free `stream-session` library:
+
+- `whisper-stream --align` emits one line per committed segment using the
+  same live capture path, with ANSI erase disabled. `--partials` additionally
+  emits revisable partial segments. `--align` cannot be combined with
+  `--step 0` (that combination exits with a parameter error).
+- `whisper-align` is the offline, microphone-free equivalent. It reads an
+  audio file and writes parseable lines to stdout and optionally `-o` file:
+
+    [00:00:04.200 --> 00:00:05.500]   and so my fellow Americans
+
+    whisper-align -m models/for-tests-ggml-tiny.en.bin -f samples/jfk.wav \
+        --step 3000 --length 10000 --keep 200 --chunk 100
+
+  Lines are produced in timestamp order with no terminal control sequences,
+  so the output can be sorted and parsed directly from a pipe. Exit codes:
+  0 success, 1 parameter/output-file error, 2 model load failure,
+  3 audio read failure, 6 consecutive inference failure.
+
+The scheduling, stable-prefix commit, segment assembly and timestamp
+alignment logic all live in `stream-session.{h,cpp}`, which depends only on
+`whisper.h` and the C++ standard library; it builds with `WHISPER_SDL2=OFF`.
+The single-producer/single-consumer `audio_ring` (in `audio-ring.h`) is the
+only primitive meant to cross the capture/processing thread boundary.
+
+
 ## Model path
 
 -m is relative to the process CWD and defaults to models/ggml-base.en.bin.

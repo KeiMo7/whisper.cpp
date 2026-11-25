@@ -109,8 +109,10 @@ else()
     add_subdirectory(vad-speech-segments)
     add_subdirectory(parakeet-cli)
     add_subdirectory(parakeet-quantize)
+    # stream-session and whisper-align have no SDL2 dependency; whisper-stream
+    # inside is only built when WHISPER_SDL2 is enabled.
+    add_subdirectory(stream)
     if (WHISPER_SDL2)
-        add_subdirectory(stream)
         add_subdirectory(command)
         add_subdirectory(talk-llama)
         add_subdirectory(lsp)
